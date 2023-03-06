@@ -1,7 +1,10 @@
 traces/
+data/
 
 ./**/*.csv
 ./**/*.pcap
+./**/*.tar.gz
 
 *.csv
 *.pcap
+*.tar.gz
