@@ -1,1 +1,7 @@
 traces/
+
+./**/*.csv
+./**/*.pcap
+
+*.csv
+*.pcap
