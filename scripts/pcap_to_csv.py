@@ -27,7 +27,13 @@ def parse_pcap(file_path: str, count: int, device_list: dict[str, str] | None, v
                 device_name: str = ""
 
                 if device_list is not None:
-                    device_name = device_list[eth_src]
+                    try:
+                        device_name = device_list[eth_src]
+                    except KeyError as e:
+                        print(
+                            "The following MAC could not be identified in the given device list: {}".format(
+                                eth_src)
+                        )
 
                 filtered_data: FilteredData = (
                     packet_index, size, eth_src, device_name)
@@ -65,13 +71,11 @@ def open_device_list(file_name: str | None) -> dict[str, str] | None:
         devices: dict[str, str] = {}
 
         for line in reader:
-            print(line)
-
             device_name = line["Device Name"]
             device_mac = line["eth.src"]
 
             if device_name is None:
-                devices[device_mac] = "None"
+                devices[device_mac] = ""
             else:
                 devices[device_mac] = device_name
         return devices
@@ -86,8 +90,10 @@ def to_csv(input: list[FilteredData], file_name: str) -> None:
 
 def main(input_file: str, output_file: str | None, device_list_file: str | None, count: int, verbose: bool) -> None:
     device_list = open_device_list(device_list_file)
+
     parsed: list[FilteredData] = parse_pcap(
         input_file, count, device_list, verbose=verbose)
+
     if output_file is None:
         output_file = input_file.replace("pcap", "csv")
     to_csv(parsed, output_file)
@@ -104,4 +110,4 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--count", default=50, type=int)
 
     args = parser.parse_args()
-    main(args.input, args.output, args.device_list, args.count, args.verbose)
+    main(args.input, args.o__output, args.device_list, args.count, args.verbose)
