@@ -1,7 +1,7 @@
-./**/*.csv
-./**/*.pcap
-./**/*.tar.gz
-./**/__pycache__/
+**/*.csv
+**/*.pcap
+**/*.tar.gz
+**/__pycache__/*
 
 *.csv
 *.pcap
