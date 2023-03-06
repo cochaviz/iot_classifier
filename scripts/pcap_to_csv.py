@@ -6,11 +6,11 @@ from scapy.all import *
 from scapy.layers.inet import *
 
 # TODO Might wanna do this with pd.dataframes
-FilteredData = tuple[int, int, str, str]
-filtered_data_csv_header = ["Packet ID", "size", "eth.src", "Device"]
+FilteredData = tuple[int, int, str, str, bool]
+filtered_data_csv_header = ["Packet ID", "size", "eth.src", "Device", "IoT"]
 
 
-def parse_pcap(file_path: str, count: int, device_list: dict[str, str] | None, verbose=False) -> list[FilteredData]:
+def parse_pcap(file_path: str, count: int, device_list: dict[str, tuple[str, bool]] | None, verbose=False) -> list[FilteredData]:
     out: list[FilteredData] = []
     failed = []
 
@@ -25,19 +25,18 @@ def parse_pcap(file_path: str, count: int, device_list: dict[str, str] | None, v
                 size: int = len(packet)
                 eth_src: str = packet[Ether].src
                 device_name: str = ""
+                is_iot: bool = False
 
                 if device_list is not None:
                     try:
-                        device_name = device_list[eth_src]
+                        device_name, is_iot = device_list[eth_src]
                     except KeyError as e:
                         print(
                             "The following MAC could not be identified in the given device list: {}".format(
                                 eth_src)
                         )
 
-                filtered_data: FilteredData = (
-                    packet_index, size, eth_src, device_name)
-                out.append(filtered_data)
+                out.append((packet_index, size, eth_src, device_name, is_iot))
             except IndexError as e:
                 failed.append(packet_index + 1)
 
@@ -62,22 +61,20 @@ def parse_pcap(file_path: str, count: int, device_list: dict[str, str] | None, v
     return out
 
 
-def open_device_list(file_name: str | None) -> dict[str, str] | None:
+def open_device_list(file_name: str | None) -> dict[str, [str, bool]] | None:
     if file_name is None:
         return None
 
     with open(file_name, "r", newline="") as f:
         reader = csv.DictReader(f)
-        devices: dict[str, str] = {}
+        devices = {}
 
         for line in reader:
             device_name = line["Device Name"]
-            device_mac = line["eth.src"]
+            device_mac = line["Mac Address"]
+            is_iot = line["IoT"]
 
-            if device_name is None:
-                devices[device_mac] = ""
-            else:
-                devices[device_mac] = device_name
+            devices[device_mac] = (device_name, is_iot)
         return devices
 
 

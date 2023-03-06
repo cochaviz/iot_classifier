@@ -7,7 +7,6 @@ import pcap_to_csv as pcap_parser
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("input_folder", type=str)
-    parser.add_argument("output_folder", type=str)
     parser.add_argument("-d" "--device-list", type=str)
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
@@ -24,7 +23,7 @@ if __name__ == "__main__":
     for file in filtered_files:
         data = pcap_parser.main(
             args.input_folder + "/" + file,
-            args.output_folder + "/" + file.replace("pcap", "csv"),
+            None,
             args.d__device_list,
             count=-1,
             verbose=args.verbose
