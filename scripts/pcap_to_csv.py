@@ -3,7 +3,7 @@
 import argparse
 import csv
 from scapy.all import *
-# from scapy.layers.inet import *
+from scapy.layers.inet import *
 
 # TODO Might wanna do this with pd.dataframes
 FilteredData = tuple[int, int, str, str]
