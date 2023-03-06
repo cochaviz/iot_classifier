@@ -4,6 +4,7 @@ data/
 ./**/*.csv
 ./**/*.pcap
 ./**/*.tar.gz
+./**/__pycache__
 
 *.csv
 *.pcap
