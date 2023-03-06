@@ -14,42 +14,38 @@ def parse_pcap(file_path: str, count: int, device_list: dict[str, tuple[str, boo
     out: list[FilteredData] = []
     failed = []
 
-    try:
-        for index, packet in enumerate(PcapReader(file_path)):
-            packet_index: int = index + 1
+    for index, packet in enumerate(PcapReader(file_path)):
+        packet_index: int = index + 1
 
-            if index > count > 0:
-                break
+        if index > count > 0:
+            break
 
-            try:
-                size: int = len(packet)
-                eth_src: str = packet[Ether].src
-                device_name: str = ""
-                is_iot: bool = False
+        try:
+            size: int = len(packet)
+            eth_src: str = packet[Ether].src
+            device_name: str = ""
+            is_iot: bool = False
 
-                if device_list is not None:
-                    try:
-                        device_name, is_iot = device_list[eth_src]
-                    except KeyError as e:
-                        print(
-                            "The following MAC could not be identified in the given device list: {}".format(
-                                eth_src)
-                        )
-
-                out.append((packet_index, size, eth_src, device_name, is_iot))
-            except IndexError as e:
-                failed.append(packet_index + 1)
-
-                if verbose:
-                    print(e)
-                    print("For packet ({}):".format(packet_index))
-                    packet.show()
-                else:
+            if device_list is not None:
+                try:
+                    device_name, is_iot = device_list[eth_src]
+                except KeyError as e:
                     print(
-                        "Index error for packet {} (probably could not find a layer, enable verbose to see more)".format(packet_index))
+                        "The following MAC could not be identified in the given device list: {}".format(
+                            eth_src)
+                    )
 
-    except KeyboardInterrupt:
-        print("Intercepted exit code, finishing early...")
+            out.append((packet_index, size, eth_src, device_name, is_iot))
+        except IndexError as e:
+            failed.append(packet_index + 1)
+
+            if verbose:
+                print(e)
+                print("For packet ({}):".format(packet_index))
+                packet.show()
+            else:
+                print(
+                    "Index error for packet {} (probably could not find a layer, enable verbose to see more)".format(packet_index))
 
     if len(failed) > 0:
         print("Failed to parse {} packets out of {}".format(
@@ -100,11 +96,21 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog="pcap_to_csv.py"
     )
-    parser.add_argument("input", type=str)
+    parser.add_argument("input", nargs='+')
     parser.add_argument("-o" "--output", type=str)
     parser.add_argument("-d", "--device-list", type=str)
     parser.add_argument("-v", "--verbose", action='store_true')
-    parser.add_argument("-c", "--count", default=50, type=int)
+    parser.add_argument("-c", "--count", default=50, type=int,
+                        help="Number of packets parsed per file. Default is 50. To analyze all files, set to -1.")
 
     args = parser.parse_args()
-    main(args.input, args.o__output, args.device_list, args.count, args.verbose)
+
+    for file in args.input:
+        try:
+            print("Parsing {}...".format(file))
+            main(file, args.o__output, args.device_list, args.count, args.verbose)
+        except KeyboardInterrupt:
+            user_input = input(
+                "Do you want to continue with the next file? (Y/n)")
+            if user_input == "n":
+                break
