@@ -61,7 +61,7 @@ def parse_pcap(file_path: str, count: int, device_list: dict[str, tuple[str, boo
     return out
 
 
-def open_device_list(file_name: str | None) -> dict[str, [str, bool]] | None:
+def open_device_list(file_name: str | None) -> dict[str, tuple[str, bool]] | None:
     if file_name is None:
         return None
 
