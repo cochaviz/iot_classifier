@@ -2,22 +2,56 @@
 
 import argparse
 import csv
+import datetime
 
 from scapy.all import *
 from scapy.layers.inet import *
-from scapy.layers.inet6 import _ICMPv6, _ICMPv6ML
+from scapy.layers.inet6 import _ICMPv6
 
 # TODO Might wanna do this with pd.dataframes
-FilteredData = tuple[int, int, str, str, str, bool]
-filtered_data_csv_header = ["packet_id",
+FilteredData = tuple[int, int, int, str, str, str, bool]
+filtered_data_csv_header = ["packet_id", "timestamp",
                             "packet_size", "eth_src", "device_name", "protocol", "iot"]
+
+DeviceList = dict[str, tuple[str, bool]] | None
 
 
 def check_icmp(packet: Packet) -> bool:
     return ICMP in packet or isinstance(packet.lastlayer(), _ICMPv6)
 
 
-def parse_pcap(file_path: str, count: int, device_list: dict[str, tuple[str, bool]] | None, verbose=False, drop_icmp=False) -> list[FilteredData]:
+def format_float_time(float_timestamp: EDecimal) -> int:
+    # Convert the float timestamp to a datetime object
+    dt = datetime.fromtimestamp(float(float_timestamp))
+
+    # Convert the datetime object to a nanosecond timestamp
+    return int(dt.timestamp() * 1e9)
+
+
+def parse_packet(packet: Packet, index: int, device_list: DeviceList) -> FilteredData:
+    size = len(packet)
+    eth_src = packet[Ether].src
+    device_name = ""
+    is_iot = False
+
+    protocol = packet.lastlayer().name
+    protocol = protocol if protocol is not None else "Unknown"
+
+    timestamp = format_float_time(packet.time)
+
+    if device_list is not None:
+        try:
+            device_name, is_iot = device_list[eth_src]
+        except KeyError as e:
+            print(
+                "The following MAC could not be identified in the given device list: {}".format(
+                    eth_src)
+            )
+
+    return (index, timestamp, size, eth_src, device_name, protocol, is_iot)
+
+
+def parse_pcap(file_path: str, count: int, device_list: DeviceList, verbose=False, drop_icmp=False) -> list[FilteredData]:
     out: list[FilteredData] = []
     failed = []
 
@@ -31,24 +65,8 @@ def parse_pcap(file_path: str, count: int, device_list: dict[str, tuple[str, boo
             break
 
         try:
-            size = len(packet)
-            eth_src = packet[Ether].src
-            device_name = ""
-            is_iot = False
-            protocol = packet.lastlayer().name
-            protocol = protocol if protocol is not None else "Unknown"
-
-            if device_list is not None:
-                try:
-                    device_name, is_iot = device_list[eth_src]
-                except KeyError as e:
-                    print(
-                        "The following MAC could not be identified in the given device list: {}".format(
-                            eth_src)
-                    )
-
-            out.append((packet_index, size, eth_src,
-                       device_name, protocol, is_iot))
+            filtered_data = parse_packet(packet, index, device_list)
+            out.append(filtered_data)
         except IndexError as e:
             failed.append(packet_index + 1)
 
@@ -79,9 +97,9 @@ def open_device_list(file_name: str | None) -> dict[str, tuple[str, bool]] | Non
         devices = {}
 
         for line in reader:
-            device_name = line["Device Name"]
-            device_mac = line["Mac Address"]
-            is_iot = line["IoT"]
+            device_name = line["device_name"]
+            device_mac = line["eth_src"]
+            is_iot = line["iot"]
 
             devices[device_mac] = (device_name, is_iot)
         return devices
