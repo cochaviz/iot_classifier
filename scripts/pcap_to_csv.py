@@ -2,29 +2,41 @@
 
 import argparse
 import csv
+
 from scapy.all import *
 from scapy.layers.inet import *
+from scapy.layers.inet6 import _ICMPv6, _ICMPv6ML
 
 # TODO Might wanna do this with pd.dataframes
-FilteredData = tuple[int, int, str, str, bool]
-filtered_data_csv_header = ["Packet ID", "size", "eth.src", "Device", "IoT"]
+FilteredData = tuple[int, int, str, str, str, bool]
+filtered_data_csv_header = ["packet_id",
+                            "packet_size", "eth_src", "device_name", "protocol", "iot"]
 
 
-def parse_pcap(file_path: str, count: int, device_list: dict[str, tuple[str, bool]] | None, verbose=False) -> list[FilteredData]:
+def check_icmp(packet: Packet) -> bool:
+    return ICMP in packet or isinstance(packet.lastlayer(), _ICMPv6)
+
+
+def parse_pcap(file_path: str, count: int, device_list: dict[str, tuple[str, bool]] | None, verbose=False, drop_icmp=False) -> list[FilteredData]:
     out: list[FilteredData] = []
     failed = []
 
     for index, packet in enumerate(PcapReader(file_path)):
         packet_index: int = index + 1
 
+        if drop_icmp and check_icmp(packet):
+            continue
+
         if index > count > 0:
             break
 
         try:
-            size: int = len(packet)
-            eth_src: str = packet[Ether].src
-            device_name: str = ""
-            is_iot: bool = False
+            size = len(packet)
+            eth_src = packet[Ether].src
+            device_name = ""
+            is_iot = False
+            protocol = packet.lastlayer().name
+            protocol = protocol if protocol is not None else "Unknown"
 
             if device_list is not None:
                 try:
@@ -35,7 +47,8 @@ def parse_pcap(file_path: str, count: int, device_list: dict[str, tuple[str, boo
                             eth_src)
                     )
 
-            out.append((packet_index, size, eth_src, device_name, is_iot))
+            out.append((packet_index, size, eth_src,
+                       device_name, protocol, is_iot))
         except IndexError as e:
             failed.append(packet_index + 1)
 
@@ -81,11 +94,11 @@ def to_csv(input: list[FilteredData], file_name: str) -> None:
         writer.writerows(input)
 
 
-def main(input_file: str, output_file: str | None, device_list_file: str | None, count: int, verbose: bool) -> None:
+def main(input_file: str, output_file: str | None, device_list_file: str | None, count: int, verbose: bool, drop_icmp: bool) -> None:
     device_list = open_device_list(device_list_file)
 
     parsed: list[FilteredData] = parse_pcap(
-        input_file, count, device_list, verbose=verbose)
+        input_file, count, device_list, verbose=verbose, drop_icmp=drop_icmp)
 
     if output_file is None:
         output_file = input_file.replace("pcap", "csv")
@@ -100,6 +113,7 @@ if __name__ == "__main__":
     parser.add_argument("-o" "--output", type=str)
     parser.add_argument("-d", "--device-list", type=str)
     parser.add_argument("-v", "--verbose", action='store_true')
+    parser.add_argument("--no-drop-icmp", action="store_true")
     parser.add_argument("-c", "--count", default=50, type=int,
                         help="Number of packets parsed per file. Default is 50. To analyze all files, set to -1.")
 
@@ -108,7 +122,8 @@ if __name__ == "__main__":
     for file in args.input:
         try:
             print("Parsing {}...".format(file))
-            main(file, args.o__output, args.device_list, args.count, args.verbose)
+            main(file, args.o__output, args.device_list,
+                 args.count, args.verbose, not args.no_drop_icmp)
         except KeyboardInterrupt:
             user_input = input(
                 "Do you want to continue with the next file? (Y/n)")
