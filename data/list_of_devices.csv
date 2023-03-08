@@ -1,4 +1,4 @@
-Device Name,Mac Address,Connection Type,IoT
+device_name,eth_src,connection_type,iot
 Smart Things,d0:52:a8:00:67:5e,Wired,True
 Amazon Echo,44:65:0d:56:cc:d3,Wireless,True
 Netatmo Welcome,70:ee:50:18:34:43,Wireless,True
