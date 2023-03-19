@@ -11,9 +11,13 @@ cd traces
 
 echo "Downloading archives..."
 cat "../filelist.txt" | egrep -v "(^#.*|^$)" | xargs -n 1 wget -nc -nv
+# Windows Equivalent : type filelist.txt | findstr /v /r "^#.* ^$" | % {wget $_}
+
 
 echo "Extracting..."
 cat *.tar.gz | tar -xzfv - -i && rm *.tar.gz
+# Windows Equivalent : type *.tar.gz | tar -xzfv - -i && del *.tar.gz
+
 
 echo "Done! :\)"
 
