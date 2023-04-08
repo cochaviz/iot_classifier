@@ -1,0 +1,48 @@
+version: "3.7"
+
+services:
+  home_net:
+    container_name: home_net
+    hostname: home_net
+    build: .
+    command: tail -F anything
+    cap_add:
+      - ALL
+    volumes:
+      - ./home_net:/data
+    networks:
+      home_net:
+        ipv4_address: 192.168.124.10 
+  padding:
+    container_name: padding
+    hostname: padding
+    cap_add:
+      - ALL
+    build: .
+    volumes:
+      - ./padd_mech:/data
+    command: tail -F anything
+    networks:
+      home_net:
+        ipv4_address: 192.168.124.20
+  classifier:
+    container_name: classifier
+    hostname: classifier
+    cap_add:
+      - ALL
+    build: .
+    volumes:
+      - ./Classifier:/data
+    command: tail -F anything
+    networks:
+      home_net:
+        ipv4_address: 192.168.124.30
+
+networks:
+  home_net:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: connting
+    ipam:
+      config:
+        - subnet: 192.168.124.0/24
