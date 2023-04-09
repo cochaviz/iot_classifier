@@ -1,13 +1,13 @@
 device_name,eth_src,connection_type,iot,incl
 Smart Things,d0:52:a8:00:67:5e,Wired,True,True
 Amazon Echo,44:65:0d:56:cc:d3,Wireless,True,True
-Netatmo Welcome,70:ee:50:18:34:43,Wireless,True,True
-TP-Link Day Night Cloud camera,f4:f2:6d:93:51:f1,Wireless,True,True
-Samsung SmartCam,00:16:6c:ab:6b:88,Wireless,True,True
-Dropcam,30:8c:fb:2f:e4:b2,Wireless,True,True
-Insteon Camera,00:62:6e:51:27:2e,Wired,True,True
-Unknown,e8:ab:fa:19:de:4f,Wireless,False,False
-Withings Smart Baby Monitor,00:24:e4:11:18:a8,Wired,True,True
+Netatmo Welcome,70:ee:50:18:34:43,Wireless,True,False
+TP-Link Day Night Cloud camera,f4:f2:6d:93:51:f1,Wireless,True,False
+Samsung SmartCam,00:16:6c:ab:6b:88,Wireless,True,False
+Dropcam,30:8c:fb:2f:e4:b2,Wireless,True,False
+Insteon Camera,00:62:6e:51:27:2e,Wired,True,False
+Unknown,e8:ab:fa:19:de:4f,Wireless,False,True
+Withings Smart Baby Monitor,00:24:e4:11:18:a8,Wired,True,False
 Belkin Wemo switch,ec:1a:59:79:f4:89,Wireless,True,True
 TP-Link Smart plug,50:c7:bf:00:56:39,Wireless,True,True
 iHome,74:c6:3b:29:d7:1d,Wireless,True,True
@@ -20,13 +20,13 @@ Withings Aura smart sleep sensor,00:24:e4:20:28:c6,Wireless,True,True
 Light Bulbs LiFX Smart Bulb,d0:73:d5:01:83:08,Wireless,True,True
 Triby Speaker,18:b7:9e:02:20:44,Wireless,True,True
 PIX-STAR Photo-frame,e0:76:d0:33:bb:85,Wireless,True,True
-HP Printer,70:5a:0f:e4:9b:c0,Wireless,False,True
-Samsung Galaxy Tab,08:21:ef:3b:fc:e3,Wireless,True,False
+HP Printer,70:5a:0f:e4:9b:c0,Wireless,True,True
+Samsung Galaxy Tab,08:21:ef:3b:fc:e3,Wireless,False,True
 Nest Dropcam,30:8c:fb:b6:ea:45,Wireless,True,False
-Android Phone,40:f3:08:ff:1e:da,Wireless,False,False
-Laptop,74:2f:68:81:69:42,Wireless,False,False
-MacBook,ac:bc:32:d4:6f:2f,Wireless,False,False
-Android Phone,b4:ce:f6:a7:a3:c2,Wireless,False,False
-IPhone,d0:a6:37:df:a1:e1,Wireless,False,False
-MacBook/Iphone,f4:5c:89:93:cc:85,Wireless,False,False
-TPLink Router Bridge LAN (Gateway),14:cc:20:51:33:ea,Unknown,False,False
+Android Phone,40:f3:08:ff:1e:da,Wireless,False,True
+Laptop,74:2f:68:81:69:42,Wireless,False,True
+MacBook,ac:bc:32:d4:6f:2f,Wireless,False,True
+Android Phone,b4:ce:f6:a7:a3:c2,Wireless,False,True
+IPhone,d0:a6:37:df:a1:e1,Wireless,False,True
+MacBook/Iphone,f4:5c:89:93:cc:85,Wireless,False,True
+TPLink Router Bridge LAN (Gateway),14:cc:20:51:33:ea,Unknown,False,True
