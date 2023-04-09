@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 
 import argparse
 import csv
@@ -6,18 +7,18 @@ import datetime
 
 from scapy.all import *
 from scapy.layers.inet import *
-from scapy.layers.inet6 import _ICMPv6
 
-# TODO Might wanna do this with pd.dataframes
 FilteredData = tuple[int, int, int, str, str, str, bool]
 filtered_data_csv_header = ["packet_id", "timestamp",
                             "packet_size", "eth_src", "device_name", "protocol", "iot"]
 
-DeviceList = dict[str, tuple[str, bool]] | None
+DeviceList = Optional[dict[str, tuple[str, bool]]]
 
 
-def check_icmp(packet: Packet) -> bool:
-    return ICMP in packet or isinstance(packet.lastlayer(), _ICMPv6)
+def drop_packets(packet: Packet) -> bool:
+    if packet.haslayer("IP") and packet[0].proto != 1 and packet[0].proto != 58 and packet[0].proto != 2:
+        return False
+    return True
 
 
 def format_float_time(float_timestamp: EDecimal) -> int:
@@ -51,14 +52,14 @@ def parse_packet(packet: Packet, index: int, device_list: DeviceList) -> Filtere
     return (index, timestamp, size, eth_src, device_name, protocol, is_iot)
 
 
-def parse_pcap(file_path: str, count: int, device_list: DeviceList, verbose=False, drop_icmp=False) -> list[FilteredData]:
+def parse_pcap(file_path: str, count: int, device_list: DeviceList, verbose=False, drop=False) -> list[FilteredData]:
     out: list[FilteredData] = []
     failed = []
 
     for index, packet in enumerate(PcapReader(file_path)):
         packet_index: int = index + 1
 
-        if drop_icmp and check_icmp(packet):
+        if drop and drop_packets(packet):
             continue
 
         if index > count > 0:
@@ -116,7 +117,7 @@ def main(input_file: str, output_file: str | None, device_list_file: str | None,
     device_list = open_device_list(device_list_file)
 
     parsed: list[FilteredData] = parse_pcap(
-        input_file, count, device_list, verbose=verbose, drop_icmp=drop_icmp)
+        input_file, count, device_list, verbose=verbose, drop=drop_icmp)
 
     if output_file is None:
         output_file = input_file.replace("pcap", "csv")
