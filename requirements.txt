@@ -1,5 +1,5 @@
-scikit-learn>=1.2.1
+scikit-learn>=1.2.2
 matplotlib>=3.7.1
 seaborn>=0.12.2
-imblearn
+imbalanced-learn>=0.10.1
 scapy
