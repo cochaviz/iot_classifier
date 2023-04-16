@@ -1,10 +1,13 @@
 **/*.csv
 **/*.pcap
-**/*.tar.gz
+**/*.gz
 **/__pycache__/*
 
 *.csv
 *.pcap
 *.tar.gz
+*.html
 
 .vscode/
+.ipynb_checkpoints/
+data/traces
